@@ -7,6 +7,7 @@ const myconnection = require('express-myconnection');
 const cors = require('cors');
 require('dotenv').config();
 
+const usuarioRoutes = require('./routes/usuario');
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use(cors());
 app.set('trust proxy', true);
+
+
+app.use('/usuario', usuarioRoutes);
 
 app.set('port', process.env.SERVERPORT);
 app.listen(app.get('port'), ()=>{
