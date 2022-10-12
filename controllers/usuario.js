@@ -1,5 +1,8 @@
 'use strict'
 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const permiso = require('./permiso');
 
 const controller = {
@@ -47,7 +50,7 @@ const controller = {
     },
 
     add: (req, res) => {
-
+        
     },
 
     update: (req, res) => {
@@ -59,7 +62,67 @@ const controller = {
     },
 
     login: (req, res) => {
-
+        try{
+            if(req.body.usuario == null || req.body.usuario == ""){
+                return res.status(400).send({
+                    'error': 'No se ingreso usuario'
+                })
+            }
+            else if(req.body.password == null || req.body.password == ""){
+                return res.status(400).send({
+                    'error': 'No se ingreso contraseña'
+                })
+            }
+            else{
+                const usuario = req.body.usuario;
+                const password = req.body.password;
+                req.getConnection((err,conn)=>{
+                    if(err) return res.status(500).send({
+                        'error': 'Error interno'
+                    });
+                    conn.query(`SELECT id, nombre, usuario, password, rolId
+                    FROM usuario WHERE usuario = ?`, [usuario],
+                    (err, rows)=>{
+                        if(err) return res.status(500).send({
+                            'error': 'Error interno',
+                            err
+                        })
+                        else if(rows == ''){
+                            return res.status(400).send({
+                                'error': 'No existe usuario'
+                            })
+                        }
+                        let compare = bcrypt.compareSync(password, rows[0].password);
+                        if(compare){
+                            jwt.sign({
+                                'id': rows[0].id,
+                                'user': rows[0].usuario,
+                                'nombre': rows[0].nombre,
+                                'rol': rows[0].rolId
+                            }, process.env.KEYJWT, {expiresIn: '100d'}, 
+                            (err, token) => {
+                                if(err) return res.status(500).send({
+                                    'error': 'Error interno',
+                                    err
+                                })
+                                return res.status(200).send({
+                                    'token': token
+                                })
+                            })
+                        }
+                        else{
+                            return res.status(400).send({
+                                'error': 'Credenciales incorrectas'
+                            })
+                        }
+                    })
+                })
+            }
+        }catch(err){
+            if(err) return res.status(500).send({
+                'error': 'Error interno'
+            })
+        }
     }
 
 }
