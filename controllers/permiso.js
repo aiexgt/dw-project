@@ -19,8 +19,8 @@ const getPermiso = (req, tipo, rol) => {
     return new Promise((resolve, reject) => {
         req.getConnection((err, conn) => {
             if(err) reject (false);
-            conn.query(`SELECT id FROM rol WHERE id = ? AND ? = 1`,
-            [rol, tipo],
+            conn.query(`SELECT id FROM rol 
+            WHERE id = ${rol} AND ${tipo} = '1'`,
             (err, rows) => {
                 if(err){
                     reject(false);
@@ -42,7 +42,7 @@ const checkPermiso = async (req, tipo) => {
         if(bearerHeader != 'undefined' && bearerHeader != null && bearerHeader != ''){
             const bearerToken = bearerHeader.split(' ')[1];
             const token = await getToken(bearerToken);
-            const permiso = await getPermiso(req, tipo, token.rolId );
+            const permiso = await getPermiso(req, tipo, token.rol );
             return {
                 permiso,
                 token

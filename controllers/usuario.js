@@ -9,7 +9,7 @@ const controller = {
     
     read: async (req, res) => {
         try{
-            const result = await permiso.checkPermiso(req, 'read');
+            const result = await permiso.checkPermiso(req, 'lectura');
             if(result.permiso == true){
                 req.getConnection((err, conn)=>{
                     if(err) return res.status(500).send({
@@ -38,15 +38,91 @@ const controller = {
                 })
             }
         }catch(err){
+            console.log(err);
             if(err) return res.status(500).send({
-                'error': 'Error interno',
-                err
+                'error': 'Error interno'
             })
         }
     },
 
-    readOne: (req, res) => {
+    readOne: async (req, res) => {
+        try{
+            const result = await permiso.checkPermiso(req, 'lectura');
+            if(result.permiso == true){
+                req.getConnection((err, conn)=>{
+                    if(err) return res.status(500).send({
+                        'error': 'Error interno'
+                    });
+                    conn.query(`
+                        SELECT u.id, u.nombre, u.primerApellido, u.segundoApellido, 
+                        u.usuario, u.correo, r.nombre AS rol, u.estado 
+                        FROM usuario u
+                        INNER JOIN rol r ON u.rolId = r.id
+                        WHERE u.id = ?`, [req.params.id], 
+                    (err, rows)=>{
+                        if(err) return res.status(500).send({
+                            'error': 'Error interno',
+                            err
+                        })
+                        return res.status(200).send({
+                            'data': rows
+                        })
+                    })
+                })
+            }
+            else{
+                return res.status(403).send({
+                    'error': 'Sin permisos'
+                })
+            }
+        }catch(err){
+            console.log(err);
+            if(err) return res.status(500).send({
+                'error': 'Error interno'
+            })
+        }
+    },
 
+    search: async (req, res) => {
+        try{
+            const result = await permiso.checkPermiso(req, 'lectura');
+            if(result.permiso == true){
+                const word = req.query.word;
+                req.getConnection((err, conn)=>{
+                    if(err) return res.status(500).send({
+                        'error': 'Error interno'
+                    });
+                    conn.query(`
+                        SELECT u.id, u.nombre, u.primerApellido, u.segundoApellido, 
+                        u.usuario, u.correo, r.nombre AS rol, u.estado 
+                        FROM usuario u
+                        INNER JOIN rol r ON u.rolId = r.id
+                        WHERE u.nombre LIKE '%${word}%' OR u.primerApellido LIKE '%${word}%'
+                        OR u.segundoApellido LIKE '%${word}%' OR u.usuario LIKE '%${word}%'
+                        OR u.correo LIKE '%${word}%'
+                        ORDER BY u.nombre ASC`, 
+                    (err, rows)=>{
+                        if(err) return res.status(500).send({
+                            'error': 'Error interno',
+                            err
+                        })
+                        return res.status(200).send({
+                            'data': rows
+                        })
+                    })
+                })
+            }
+            else{
+                return res.status(403).send({
+                    'error': 'Sin permisos'
+                })
+            }
+        }catch(err){
+            console.log(err);
+            if(err) return res.status(500).send({
+                'error': 'Error interno'
+            })
+        }
     },
 
     add: (req, res) => {
