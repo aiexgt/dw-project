@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const permiso = require('./permiso');
-const { estado } = require('./regEx');
 const regEx = require('./regEx');
 
 const controller = {
