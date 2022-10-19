@@ -408,7 +408,7 @@ const controller = {
                                 'user': rows[0].usuario,
                                 'nombre': rows[0].nombre,
                                 'rol': rows[0].rolId
-                            }, process.env.KEYJWT, {expiresIn: '100d'}, 
+                            }, process.env.KEYJWT, {expiresIn: '2h'}, 
                             (err, token) => {
                                 if(err) return res.status(500).send({
                                     'error': 'Error interno',
