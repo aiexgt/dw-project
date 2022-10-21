@@ -1,6 +1,6 @@
 Gestion de usuarios
 
-Elaborar pedidos -- registrar
+//Elaborar pedidos -- registrar
 
 //Seguimiento de pedidos  -- consultar
 
