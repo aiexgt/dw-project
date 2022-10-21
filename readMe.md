@@ -2,9 +2,8 @@ Gestion de usuarios
 
 Elaborar pedidos -- registrar
 
-Seguimiento de pedidos  -- consultar
+//Seguimiento de pedidos  -- consultar
 
-Administración de inventarios disponibles  -- stock
 
 
 

@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const usuarioRoutes = require('./routes/usuario');
 const articuloRoutes = require('./routes/articulo');
+const pedidoRoutes = require('./routes/pedido');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.set('trust proxy', true);
 
 app.use('/usuario', usuarioRoutes);
 app.use('/articulo', articuloRoutes);
+app.use('/pedido', pedidoRoutes);
 
 app.set('port', process.env.SERVERPORT);
 app.listen(app.get('port'), ()=>{

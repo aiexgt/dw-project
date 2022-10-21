@@ -16,20 +16,27 @@ const controller = {
               error: "Error interno",
             });
           if (word != "" && word != null && word != "undefined") {
-            query = `WHERE a.codigo LIKE '%${word}%' OR
-                        a.nombre LIKE '%${word}%' OR
-                        a.descripcion LIKE '%${word}%'`;
+            query = `WHERE c.nombre LIKE '%${word}%' OR
+                    p.fecha = '${word}' OR
+                    p.direccionEntrega LIKE '%${word}%' OR 
+                    P.observacion LIKE '%${word}%'`;
           }
           conn.query(
             `
-                        SELECT a.id, ta.nombre AS tipoArticulo,
-                        a.codigo, a.nombre, a.descripcion, a.stock,
-                        c.nombre AS categoria, a.stock
-                        FROM articulo a
-                        INNER JOIN tipoArticulo ta ON ta.id = a.tipoArticuloId
-                        INNER JOIN categoria c ON c.id = a.categoriaId
+                        SELECT p.id, 
+                        p.clienteId, CONCAT(c.nombre, ' ',c.primerApellido) AS clienteNombre,
+                        p.fecha, p.direccionEntrega, 
+                        p.tipoPagoId, tp.nombre AS tipoPagoNombre,
+                        p.usuarioId, CONCAT(u.nombre, ' ',u.primerApellido) AS usuarioNombre,
+                        p.estadoPedidoId, ep.nombre AS estadoPedidoNombre,
+                        p.observacion
+                        FROM pedido p
+                        INNER JOIN cliente c ON c.id = p.clienteId
+                        INNER JOIN tipoPago tp ON tp.id = tipoPagoId
+                        INNER JOIN usuario u ON u.id = usuarioId
+                        INNER JOIN estadoPedido ep ON ep.id = estadoPedidoId
                         ${query}
-                        ORDER BY a.nombre ASC`,
+                        ORDER BY p.fecha DESC`,
             (err, rows) => {
               if (err)
                 return res.status(500).send({
@@ -67,13 +74,19 @@ const controller = {
             });
           conn.query(
             `
-            SELECT a.id, ta.nombre AS tipoArticulo,
-            a.codigo, a.nombre, a.descripcion, a.stock,
-            c.nombre AS categoria, a.stock
-            FROM articulo a
-            INNER JOIN tipoArticulo ta ON ta.id = a.tipoArticuloId
-            INNER JOIN categoria c ON c.id = a.categoriaId
-            WHERE a.id = ?`,
+            SELECT p.id, 
+            p.clienteId, CONCAT(c.nombre, ' ',c.primerApellido) AS clienteNombre,
+            p.fecha, p.direccionEntrega, 
+            p.tipoPagoId, tp.nombre AS tipoPagoNombre,
+            p.usuarioId, CONCAT(u.nombre, ' ',u.primerApellido) AS usuarioNombre,
+            p.estadoPedidoId, ep.nombre AS estadoPedidoNombre,
+            p.observacion
+            FROM pedido p
+            INNER JOIN cliente c ON c.id = p.clienteId
+            INNER JOIN tipoPago tp ON tp.id = tipoPagoId
+            INNER JOIN usuario u ON u.id = usuarioId
+            INNER JOIN estadoPedido ep ON ep.id = estadoPedidoId
+            WHERE p.id = ?`,
             [req.params.id],
             (err, rows) => {
               if (err)
@@ -105,87 +118,56 @@ const controller = {
     try {
       const result = await permiso.checkPermiso(req, "crear");
       if (result.permiso == true) {
-        const tipoArticuloId = req.body.tipoArticuloId;
-        const codigo = req.body.codigo;
-        const nombre = req.body.nombre;
-        const descripcion = req.body.descripcion;
-        const precio = req.body.precio;
-        const categoriaId = req.body.categoriaId;
-        const stock = req.body.stock;
-        let data = {};
+        const clienteId = req.body.clienteId;
+        const direccion = req.body.direccion;
+        const tipoPagoId = req.body.tipoPagoId;
+        const observacion = req.body.observacion;
+        let data = {
+          fecha: new Date(),
+          usuarioId: result.token.id,
+          estadoPedidoId: 1,
+        };
 
         if (
-          regEx.numeros.test(tipoArticuloId) &&
-          tipoArticuloId != "undefined" &&
-          tipoArticuloId != null &&
-          tipoArticuloId > 0
+          regEx.numeros.test(clienteId) &&
+          clienteId != "undefined" &&
+          clienteId != null &&
+          clienteId > 0
         ) {
-          data.tipoArticuloId = tipoArticuloId;
+          data.clienteId = clienteId;
         } else {
           return res.status(400).send({
-            error: "El tipo articulo no es válido",
-          });
-        }
-
-        if (
-          regEx.codigo.test(codigo) &&
-          codigo != "undefined" &&
-          codigo != null
-        ) {
-          data.codigo = codigo;
-        } else {
-          return res.status(400).send({
-            error: "El codigo no es válido",
+            error: "El cliente no es válido",
           });
         }
 
         if (
-          regEx.nombreA.test(nombre) &&
-          nombre != "undefined" &&
-          nombre != null
+          regEx.direccion.test(direccion) &&
+          direccion != "undefined" &&
+          direccion != null
         ) {
-          data.nombre = nombre;
+          data.direccionEntrega = direccion;
         } else {
           return res.status(400).send({
-            error: "Nombre no es válido",
-          });
-        }
-
-        if (descripcion != "undefined" && descripcion != null) {
-          data.descripcion = descripcion;
-        }
-
-        if (
-          regEx.monto.test(precio) &&
-          precio != "undefined" &&
-          precio != null
-        ) {
-          data.precio = precio;
-        } else {
-          return res.status(400).send({
-            error: "Precio no es válido",
+            error: "La direccion no es válido",
           });
         }
 
         if (
-          regEx.numeros.test(categoriaId) &&
-          categoriaId != "undefined" &&
-          categoriaId != null &&
-          categoriaId > 0
+          regEx.numeros.test(tipoPagoId) &&
+          tipoPagoId != "undefined" &&
+          tipoPagoId != null &&
+          tipoPagoId > 0
         ) {
-          data.categoriaId = categoriaId;
+          data.tipoPagoId = tipoPagoId;
         } else {
           return res.status(400).send({
-            error: "La categoria no es válido",
+            error: "El tipo de pago no es válido",
           });
         }
 
-        if (regEx.monto.test(stock) && stock != "undefined" && stock != null) {
-          data.stock = stock;
-        } else {
-          return res.status(400).send({
-            error: "Stock no es válido",
-          });
+        if (observacion != "undefined" && observacion != null) {
+          data.observacion = observacion;
         }
 
         req.getConnection((err, conn) => {
@@ -195,23 +177,16 @@ const controller = {
             });
           conn.query(
             `
-                        INSERT INTO articulo SET ?`,
+                        INSERT INTO pedido SET ?`,
             [data],
             (err, rows) => {
               if (err) {
-                if (err.code == "ER_DUP_ENTRY") {
-                  return res.status(400).send({
-                    error: "Ya existe código artículo",
-                  });
-                } else {
-                  return res.status(500).send({
-                    error: "Error interno",
-                    err,
-                  });
-                }
+                return res.status(500).send({
+                  error: "Error interno",
+                  err,
+                });
               }
               return res.status(200).send({
-                usuario: data.usuario,
                 id: rows.insertId,
                 createdAt: new Date(),
               });
@@ -236,91 +211,7 @@ const controller = {
     try {
       const result = await permiso.checkPermiso(req, "editar");
       if (result.permiso == true) {
-        const tipoArticuloId = req.body.tipoArticuloId;
-        const codigo = req.body.codigo;
-        const nombre = req.body.nombre;
-        const descripcion = req.body.descripcion;
-        const precio = req.body.precio;
-        const categoriaId = req.body.categoriaId;
-        const stock = req.body.stock;
-        let data = {};
-
-        console.log(nombre);
-
-        if (
-          regEx.numeros.test(tipoArticuloId) &&
-          tipoArticuloId != "undefined" &&
-          tipoArticuloId != null &&
-          tipoArticuloId > 0
-        ) {
-          data.tipoArticuloId = tipoArticuloId;
-        } else {
-          return res.status(400).send({
-            error: "El tipo articulo no es válido",
-          });
-        }
-
-        if (
-          regEx.codigo.test(codigo) &&
-          codigo != "undefined" &&
-          codigo != null
-        ) {
-          data.codigo = codigo;
-        } else {
-          return res.status(400).send({
-            error: "El codigo no es válido",
-          });
-        }
-
-        if (
-          regEx.nombreA.test(nombre) &&
-          nombre != "undefined" &&
-          nombre != null
-        ) {
-          data.nombre = nombre;
-        } else {
-          return res.status(400).send({
-            error: "Nombre no es válido",
-          });
-        }
-
-        if (descripcion != "undefined" && descripcion != null) {
-          data.descripcion = descripcion;
-        }
-
-        if (
-          regEx.monto.test(precio) &&
-          precio != "undefined" &&
-          precio != null
-        ) {
-          data.precio = precio;
-        } else {
-          return res.status(400).send({
-            error: "Precio no es válido",
-          });
-        }
-
-        if (
-          regEx.numeros.test(categoriaId) &&
-          categoriaId != "undefined" &&
-          categoriaId != null &&
-          categoriaId > 0
-        ) {
-          data.categoriaId = categoriaId;
-        } else {
-          return res.status(400).send({
-            error: "La categoria no es válido",
-          });
-        }
-
-        if (regEx.monto.test(stock) && stock != "undefined" && stock != null) {
-          data.stock = stock;
-        } else {
-          return res.status(400).send({
-            error: "Stock no es válido",
-          });
-        }
-
+        const estado = req.body.estado;
 
         req.getConnection((err, conn) => {
           if (err)
@@ -329,23 +220,16 @@ const controller = {
             });
           conn.query(
             `
-                        UPDATE articulo SET ? WHERE id = ?`,
-            [data, req.params.id],
+                        UPDATE pedido SET estadoPedidoId = ? WHERE id = ?`,
+            [estado, req.params.id],
             (err, rows) => {
               if (err) {
-                if (err.code == "ER_DUP_ENTRY") {
-                  return res.status(400).send({
-                    error: "Ya existe código artículo",
-                  });
-                } else {
-                  return res.status(500).send({
-                    error: "Error interno",
-                    err,
-                  });
-                }
+                return res.status(500).send({
+                  error: "Error interno",
+                  err,
+                });
               }
               return res.status(200).send({
-                usuario: data.usuario,
                 id: req.params.id,
                 updatedAt: new Date(),
               });
@@ -375,7 +259,7 @@ const controller = {
               error: "Error interno",
             });
           conn.query(
-            `DELETE FROM articulo WHERE id = ?`,
+            `DELETE FROM pedido WHERE id = ?`,
             [req.params.id],
             (err) => {
               if (err)
@@ -401,7 +285,7 @@ const controller = {
           error: "Error interno",
         });
     }
-  }
+  },
 };
 
 module.exports = controller;

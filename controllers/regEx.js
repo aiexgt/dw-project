@@ -11,7 +11,8 @@ const regEx = {
     numeros: new RegExp("^[0-9]+$"),
     estado: new RegExp("^[01]{1,1}$"),
     codigo: new RegExp("^[A-Z-]{4,18}$"),
-    monto: new RegExp("^[0-9.]+$")
+    monto: new RegExp("^[0-9.]+$"),
+    direccion: new RegExp("^[A-Z ñáéíóúü]{5,300}$", "i"),
 
 }
 
