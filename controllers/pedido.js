@@ -17,9 +17,8 @@ const controller = {
             });
           if (word != "" && word != null && word != "undefined") {
             query = `WHERE c.nombre LIKE '%${word}%' OR
-                    p.fecha = '${word}' OR
-                    p.direccionEntrega LIKE '%${word}%' OR 
-                    P.observacion LIKE '%${word}%'`;
+                    p.fecha LIKE '%${word}%' OR
+                    p.direccionEntrega LIKE '%${word}%'`;
           }
           conn.query(
             `

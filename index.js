@@ -11,6 +11,7 @@ const usuarioRoutes = require('./routes/usuario');
 const articuloRoutes = require('./routes/articulo');
 const pedidoRoutes = require('./routes/pedido');
 const detallePedidoRoutes = require('./routes/detallePedido');
+const clienteRoutes = require('./routes/cliente');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/usuario', usuarioRoutes);
 app.use('/articulo', articuloRoutes);
 app.use('/pedido', pedidoRoutes);
 app.use('/detallePedido', detallePedidoRoutes);
+app.use('/cliente', clienteRoutes);
 
 app.set('port', process.env.SERVERPORT);
 app.listen(app.get('port'), ()=>{
