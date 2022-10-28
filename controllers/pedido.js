@@ -267,6 +267,7 @@ const controller = {
                   err,
                 });
               else {
+                conn.query(`DELETE FROM detallePedido WHERE pedidoId = ?`, [req.params.id]);
                 return res.status(204).send();
               }
             }

@@ -70,7 +70,7 @@ const controller = {
           conn.query(
             `
                         SELECT u.id, u.nombre, u.primerApellido, u.segundoApellido, 
-                        u.usuario, u.correo, r.nombre AS rol, u.estado 
+                        u.usuario, u.correo, u.rolId AS rol, u.estado 
                         FROM usuario u
                         INNER JOIN rol r ON u.rolId = r.id
                         WHERE u.id = ?`,
@@ -533,6 +533,44 @@ const controller = {
       console.log(err);
     }
   },
+
+  readRol: async (req, res) => {
+    try {
+      const result = await permiso.checkPermiso(req, "lectura");
+      if (result.permiso == true) {
+        req.getConnection((err, conn) => {
+          if (err)
+            return res.status(500).send({
+              error: "Error interno",
+            });
+          conn.query(
+            `
+                SELECT * FROM rol`,
+            (err, rows) => {
+              if (err)
+                return res.status(500).send({
+                  error: "Error interno",
+                  err,
+                });
+              return res.status(200).send({
+                data: rows,
+              });
+            }
+          );
+        });
+      } else {
+        return res.status(403).send({
+          error: "Sin permisos",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      if (err)
+        return res.status(500).send({
+          error: "Error interno",
+        });
+    }
+  }
 };
 
 module.exports = controller;

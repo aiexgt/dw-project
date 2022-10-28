@@ -5,6 +5,7 @@ const UsuarioController = require('../controllers/usuario');
 
 const router = express.Router();
 
+router.get('/rol', UsuarioController.readRol);
 router.post('/login', UsuarioController.login);
 router.post('/jwt', UsuarioController.jwtDecode);
 

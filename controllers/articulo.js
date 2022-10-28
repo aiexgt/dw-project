@@ -27,7 +27,7 @@ const controller = {
                         INNER JOIN tipoArticulo ta ON ta.id = a.tipoArticuloId
                         INNER JOIN categoria c ON c.id = a.categoriaId
                         ${query}
-                        ORDER BY a.nombre ASC`,
+                        ORDER BY a.categoriaId ASC,  a.nombre ASC`,
             (err, rows) => {
               if (err)
                 return res.status(500).send({
@@ -65,9 +65,9 @@ const controller = {
             });
           conn.query(
             `
-            SELECT a.id, ta.nombre AS tipoArticulo,
+            SELECT a.id, a.tipoArticuloId AS tipoArticulo,
             a.codigo, a.nombre, a.descripcion, a.stock,
-            c.nombre AS categoria, a.stock
+            a.categoriaId AS categoria, a.stock, a.precio
             FROM articulo a
             INNER JOIN tipoArticulo ta ON ta.id = a.tipoArticuloId
             INNER JOIN categoria c ON c.id = a.categoriaId
