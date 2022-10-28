@@ -17,7 +17,7 @@ const controller = {
             `
                         SELECT dp.id, 
                         dp.articuloId, a.codigo AS articuloCodigo,
-                        a.nombre AS articuloNombre, dp.cantidad
+                        a.nombre AS articuloNombre, dp.cantidad, a.precio
                         FROM detallePedido dp
                         INNER JOIN articulo a ON a.id = dp.articuloId
                         WHERE pedidoId = ?

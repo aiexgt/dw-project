@@ -8,17 +8,15 @@ const controller = {
     try {
       const result = await permiso.checkPermiso(req, "lectura");
       if (result.permiso == true) {
-        const word = req.query.word;
+        const categoria = req.query.categoria;
         let query = "";
         req.getConnection((err, conn) => {
           if (err)
             return res.status(500).send({
               error: "Error interno",
             });
-          if (word != "" && word != null && word != "undefined") {
-            query = `WHERE a.codigo LIKE '%${word}%' OR
-                        a.nombre LIKE '%${word}%' OR
-                        a.descripcion LIKE '%${word}%'`;
+          if (categoria != "" && categoria != null && categoria != "undefined") {
+            query = `WHERE a.categoriaId = ${categoria}`;
           }
           conn.query(
             `
@@ -386,6 +384,44 @@ const controller = {
               else {
                 return res.status(204).send();
               }
+            }
+          );
+        });
+      } else {
+        return res.status(403).send({
+          error: "Sin permisos",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      if (err)
+        return res.status(500).send({
+          error: "Error interno",
+        });
+    }
+  },
+
+  readCategoria: async (req, res) => {
+    try {
+      const result = await permiso.checkPermiso(req, "lectura");
+      if (result.permiso == true) {
+        req.getConnection((err, conn) => {
+          if (err)
+            return res.status(500).send({
+              error: "Error interno",
+            });
+          conn.query(
+            `
+                SELECT * FROM categoria`,
+            (err, rows) => {
+              if (err)
+                return res.status(500).send({
+                  error: "Error interno",
+                  err,
+                });
+              return res.status(200).send({
+                data: rows,
+              });
             }
           );
         });
